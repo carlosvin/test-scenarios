@@ -3,17 +3,39 @@
 import pytest
 from test_scenarios.scenario import ScenarioBuilder
 from pymongo.database import Database
+from syrupy.filters import props
 
 
-@pytest.mark.skip(reason="I need to focus on fixing the loader first")
-def test_scenario_fixture_creation(scenario_fixture: ScenarioBuilder, db: Database):
+def test_scenario_fixture_creation(
+    scenario_builder: ScenarioBuilder, db: Database, snapshot_json
+):
     """Test that scenario_fixture allows scenario creation"""
-    sc = ScenarioBuilder(db)
-    sc.create(
+    inserted_ids_by_collection = scenario_builder.create(
         {
-            "users": [{"name": "Alice"}, {"name": "Carlos"}],
-            "orders": [{"item": "Book"}, {"item": "Car"}],
+            "customers": [
+                {"name": "Alice", "status": "inactive"},
+                {"name": "Louis", "age": 25},
+            ],
+            "orders": [
+                {
+                    "id": "order_001",
+                    "items": [
+                        {"price": 19.99, "product_id": "book_123", "quantity": 1}
+                    ],
+                },
+                {
+                    "id": "order_002",
+                    "items": None,
+                    "tax": 0.2,
+                },
+            ],
         }
     )
-    assert db["users"].count_documents({}) == 2
-    assert db["orders"].count_documents({}) == 2
+    for collection_name, inserted_ids in inserted_ids_by_collection:
+        assert len(inserted_ids) == 2
+    assert db["customers"].find({}).to_list() == snapshot_json(
+        name="customers", exclude=props("_id")
+    )
+    assert db["orders"].find({}).to_list() == snapshot_json(
+        name="orders", exclude=props("_id")
+    )

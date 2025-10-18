@@ -4,12 +4,15 @@ import pytest
 import os
 
 from test_scenarios.scenario import ScenarioBuilder
+from test_scenarios.template_loader import load_templates_from_path
 
 
 def _get_option(request: pytest.FixtureRequest, name: str, default=None):
-    return request.config.getoption(
+    value = request.config.getoption(
         f"--{name}", default=os.environ.get(name.upper().replace("-", "_"), default)
     )
+    print(f"Using option {name}={value}")
+    return value
 
 
 @pytest.fixture(scope="session")
@@ -34,5 +37,6 @@ def db(request: pytest.FixtureRequest, mongo_client: MongoClient):
 
 
 @pytest.fixture
-def scenario_fixture(db: Database):
-    return ScenarioBuilder(db)
+def scenario_builder(db: Database, templates_path: str) -> ScenarioBuilder:
+    templates = load_templates_from_path(templates_path)
+    return ScenarioBuilder(db, templates)
