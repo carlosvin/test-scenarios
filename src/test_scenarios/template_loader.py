@@ -3,39 +3,31 @@ A utility to dynamically load template dictionaries from modules in a given pack
 """
 
 import importlib
-import pkgutil
-from types import ModuleType
+import os
 from typing import Any, Dict
 
 
-def load_templates_from_path(package: ModuleType) -> Dict[str, Any]:
+def load_templates_from_path(path: str) -> Dict[str, Any]:
     """
-    Dynamically loads 'TEMPLATE' dictionaries from all modules in a given package.
-
-    This function iterates through all modules in the specified package path,
-    imports them, and looks for a variable named 'TEMPLATE'. If found, it adds
-    the content of 'TEMPLATE' to a dictionary, using the submodule's name as the key.
+    Loads all TEMPLATE dictionaries from Python files in the given directory.
 
     Args:
-        package: The package to search for modules (e.g., tests.templates).
+        path: Filesystem path to the directory containing template modules.
 
     Returns:
-        A dictionary where keys are the submodule names and values are the
-        'TEMPLATE' dictionaries from each module.
+        A dictionary mapping filename (without .py) to the TEMPLATE dict in each file.
     """
-    templates: Dict[str, Any] = {}
-    if not hasattr(package, "__path__"):
-        raise ImportError(f"'{package.__name__}' is not a package")
-
-    for _, module_name, _ in pkgutil.iter_modules(package.__path__):
-        # Construct the full module path (e.g., 'tests.templates.customers')
-        full_module_path = f"{package.__name__}.{module_name}"
-
-        # Import the module
-        module = importlib.import_module(full_module_path)
-
-        # Get the TEMPLATE variable if it exists
-        if hasattr(module, "TEMPLATE"):
-            templates[module_name] = getattr(module, "TEMPLATE")
-
+    templates = {}
+    abs_path = os.path.abspath(path)
+    for filename in os.listdir(abs_path):
+        if filename.endswith(".py") and filename != "__init__.py":
+            module_name = filename[:-3]
+            file_path = os.path.join(abs_path, filename)
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            if not spec or not spec.loader:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            if hasattr(module, "TEMPLATE"):
+                templates[module_name] = getattr(module, "TEMPLATE")
     return templates

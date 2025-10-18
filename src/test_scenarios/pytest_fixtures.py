@@ -13,6 +13,11 @@ def _get_option(request: pytest.FixtureRequest, name: str, default=None):
 
 
 @pytest.fixture(scope="session")
+def templates_path(request: pytest.FixtureRequest):
+    return _get_option(request, "templates-path", default="tests/templates")
+
+
+@pytest.fixture(scope="session")
 def mongo_client(request: pytest.FixtureRequest):
     db_url = _get_option(request, "db-url", default="mongodb://localhost:27017")
     with MongoClient(db_url) as client:
