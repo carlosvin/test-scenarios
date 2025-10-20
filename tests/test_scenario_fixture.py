@@ -1,5 +1,8 @@
 """Tests for the scenario_fixture pytest plugin."""
 
+from types import SimpleNamespace
+
+import pytest
 from test_scenarios.scenario import ScenarioBuilder
 from pymongo.database import Database
 from syrupy.filters import props
@@ -35,3 +38,23 @@ def test_scenario_fixture_creation(
         assert db[collection_name].find({}).to_list() == snapshot_json(
             name=collection_name, exclude=props("_id")
         )
+
+
+def test_create_raises_on_partial_insert(db, scenario_builder, monkeypatch):
+    """If insert_many does not return all inserted ids, raise ValueError."""
+
+    def fake_insert_many(self, docs, comment=None, **kwargs):
+        # Return a result with fewer inserted ids than docs
+        result = SimpleNamespace()
+        result.inserted_ids = [1]
+        return result
+
+    # Patch the insert_many method on the Collection class so any collection instance will use it
+    import pymongo.collection
+
+    monkeypatch.setattr(pymongo.collection.Collection, "insert_many", fake_insert_many)
+
+    scenario = {"customers": [{"name": "a"}, {"name": "b"}]}
+
+    with pytest.raises(ValueError):
+        list(scenario_builder.create(scenario))

@@ -29,3 +29,23 @@ test-update = "uv run pytest tests --snapshot-update"
 coverage = "uv run pytest --cov-report html --cov=src/test_scenarios --cov-report=term-missing tests"
 lint = "uv run ruff check"
 format = "uv run ruff check --fix"
+
+[tool.coverage.run]
+source = ["src/test_scenarios"]
+omit = ["tests/*", "*/tests/*"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "^import ",
+    "^from .* import ",
+]
+show_missing = true
