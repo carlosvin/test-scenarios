@@ -12,12 +12,20 @@ requires = ["uv_build>=0.9.3,<0.10.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = ["pymongo>=4.15.3", "pytest>=8.4.2", "ruff>=0.14.1", "syrupy>=5.0.0"]
+dev = [
+    "pymongo>=4.15.3",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.1",
+    "syrupy>=5.0.0",
+]
 
 [project.entry-points.pytest11]
 test_scenarios = "test_scenarios.pytest_fixtures"
 
 [tool.poe.tasks]
-test = "uv run pytest tests --snapshot-update"
+test = "uv run pytest tests"
+test-update = "uv run pytest tests --snapshot-update"
+coverage = "uv run pytest --cov-report html --cov=src/test_scenarios --cov-report=term-missing tests"
 lint = "uv run ruff check"
 format = "uv run ruff check --fix"
