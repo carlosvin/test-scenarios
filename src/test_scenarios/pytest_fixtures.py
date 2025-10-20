@@ -32,6 +32,7 @@ def db(request: pytest.FixtureRequest, mongo_client: MongoClient):
     db_name = _get_option(request, "db-name", default="test_db")
     db = mongo_client[db_name]
     for name in db.list_collection_names():
+        print(f"Clearing collection {name} before test")
         db[name].delete_many({})
     yield db
 
