@@ -35,7 +35,7 @@ jobs:
             - name: Install the project
               run: uv sync --locked --all-extras --dev
             - name: Test
-              run: uv run poe test
+              run: uv run poe coverage
             - name: Lint
               run: uv run poe lint
             - name: Upload coverage report to Codecov
