@@ -23,7 +23,7 @@ pip install -r requirements-dev.txt
 If published to PyPI, you can install the package:
 
 ```bash
-pip install test-scenarios
+pip install pytest-scenarios
 ```
 
 ## Configuration
