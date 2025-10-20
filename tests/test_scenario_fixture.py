@@ -1,6 +1,5 @@
 """Tests for the scenario_fixture pytest plugin."""
 
-import pytest
 from test_scenarios.scenario import ScenarioBuilder
 from pymongo.database import Database
 from syrupy.filters import props
@@ -33,9 +32,6 @@ def test_scenario_fixture_creation(
     )
     for collection_name, inserted_ids in inserted_ids_by_collection:
         assert len(inserted_ids) == 2
-    assert db["customers"].find({}).to_list() == snapshot_json(
-        name="customers", exclude=props("_id")
-    )
-    assert db["orders"].find({}).to_list() == snapshot_json(
-        name="orders", exclude=props("_id")
-    )
+        assert db[collection_name].find({}).to_list() == snapshot_json(
+            name=collection_name, exclude=props("_id")
+        )
