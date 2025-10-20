@@ -26,6 +26,18 @@ If published to PyPI, you can install the package:
 pip install pytest-scenarios
 ```
 
+Or with uv:
+
+```bash
+uv add pytest-scenarios --dev
+```
+
+Or with Poetry:
+
+```bash
+poetry add pytest-scenarios --group dev
+```
+
 ## Configuration
 
 Set the MongoDB connection URI via environment variable:
