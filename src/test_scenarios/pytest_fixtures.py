@@ -27,17 +27,19 @@ def mongo_client(request: pytest.FixtureRequest):
         yield client
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def db(request: pytest.FixtureRequest, mongo_client: MongoClient):
     db_name = _get_option(request, "db-name", default="test_db")
-    db = mongo_client[db_name]
-    for name in db.list_collection_names():
-        print(f"Clearing collection {name} before test")
-        db[name].delete_many({})
-    yield db
+    yield mongo_client[db_name]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def scenario_builder(db: Database, templates_path: str) -> ScenarioBuilder:
     templates = load_templates_from_path(templates_path)
     return ScenarioBuilder(db, templates)
+
+
+@pytest.fixture(scope="function", autouse=True)
+def cleanup_database(scenario_builder: ScenarioBuilder):
+    """Clear all collections in the database before each test function."""
+    scenario_builder.cleanup_collections()

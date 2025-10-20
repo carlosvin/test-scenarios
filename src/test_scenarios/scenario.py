@@ -42,3 +42,13 @@ class ScenarioBuilder:
         and values are iterables of documents to insert into those collections."""
         for collection_name in self._templates:
             self._db.create_collection(collection_name, check_exists=False)
+
+    @property
+    def collections(self) -> Iterable[str]:
+        """Return the collection names managed by this ScenarioBuilder."""
+        return self._templates.keys()
+
+    def cleanup_collections(self):
+        """Clear all collections managed by this ScenarioBuilder."""
+        for name in self.collections:
+            self._db[name].delete_many({})
