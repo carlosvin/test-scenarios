@@ -22,17 +22,17 @@ dev = [
 ]
 
 [project.entry-points.pytest11]
-test_scenarios = "test_scenarios.pytest_fixtures"
+pytest_scenarios = "pytest_scenarios.pytest_fixtures"
 
 [tool.poe.tasks]
 test = "uv run pytest tests"
 test-update = "uv run pytest tests --snapshot-update"
-coverage = "uv run pytest --cov-report html --cov-report xml --cov=src/test_scenarios --cov-report=term-missing tests"
+coverage = "uv run pytest --cov-report html --cov-report xml --cov=src/pytest_scenarios --cov-report=term-missing tests"
 lint = "uv run ruff check"
 format = "uv run ruff check --fix"
 
 [tool.coverage.run]
-source = ["src/test_scenarios"]
+source = ["src/pytest_scenarios"]
 omit = ["tests/*", "*/tests/*"]
 branch = true
 
