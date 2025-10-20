@@ -1,65 +1,65 @@
 name: Release
 
 on:
-    pull_request:
-        types: [closed]
+  pull_request:
+    types: [closed]
 
 permissions:
-    id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
-    contents: write
+  id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+  contents: write
 jobs:
-    release:
-        runs-on: ubuntu-latest
-        environment:
-            name: pypi
-            url: https://pypi.org/p/mdb-fields-cleaner
+  release:
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pytest-scenarios
 
-        if: github.event.pull_request.merged
+    if: github.event.pull_request.merged
 
-        steps:
-            - name: Gen version number
-              id: gen-version
-              uses: K-Phoen/semver-release-action@master
-              with:
-                  release_branch: main
-                  release_strategy: none
-                  tag_format: "%major%.%minor%.%patch%"
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Gen version number
+        id: gen-version
+        uses: K-Phoen/semver-release-action@master
+        with:
+          release_branch: main
+          release_strategy: none
+          tag_format: "%major%.%minor%.%patch%"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            - uses: actions/checkout@v5
-            - name: Install UV
-              uses: astral-sh/setup-uv@v7.1.1
-            - name: Set up Python
-              run: uv python install
-            - run: git config user.name "${{ github.actor }}"
-            - run: git config user.email "${{ github.actor }}@users.noreply.github.com"
+      - uses: actions/checkout@v5
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7.1.1
+      - name: Set up Python
+        run: uv python install
+      - run: git config user.name "${{ github.actor }}"
+      - run: git config user.email "${{ github.actor }}@users.noreply.github.com"
 
-            - name: Update pyproject file version
-              id: update-pyproject
-              run: |
-                  VERSION=$(echo "${{ steps.gen-version.outputs.tag }}" | sed 's/^v//')
-                  uv version "$VERSION"
-                  uv sync --locked --all-extras --dev
-                  git commit pyproject.toml -m "Bump to version $VERSION"
-                  git push
-                  COMMIT=$(git rev-parse --short HEAD)
+      - name: Update pyproject file version
+        id: update-pyproject
+        run: |
+          VERSION=$(echo "${{ steps.gen-version.outputs.tag }}" | sed 's/^v//')
+          uv version "$VERSION"
+          uv sync --locked --all-extras --dev
+          git commit pyproject.toml -m "Bump to version $VERSION"
+          git push
+          COMMIT=$(git rev-parse --short HEAD)
 
-            - name: Create Release
-              if: ${{ steps.gen-version.outputs.tag }}
-              uses: ncipollo/release-action@v1.20.0
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                  name: ${{ steps.gen-version.outputs.tag }}
-                  tag: ${{ steps.gen-version.outputs.tag }}
-                  commit: ${{ steps.update-pyproject.outputs.COMMIT }}
-                  generateReleaseNotes: true
-                  makeLatest: true
+      - name: Create Release
+        if: ${{ steps.gen-version.outputs.tag }}
+        uses: ncipollo/release-action@v1.20.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: ${{ steps.gen-version.outputs.tag }}
+          tag: ${{ steps.gen-version.outputs.tag }}
+          commit: ${{ steps.update-pyproject.outputs.COMMIT }}
+          generateReleaseNotes: true
+          makeLatest: true
 
-            - name: Build pip
-              run: |
-                  uv sync --locked --all-extras --dev
-                  uv build
-            - name: Publish to PyPI
-              uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Build pip
+        run: |
+          uv sync --locked --all-extras --dev
+          uv build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
