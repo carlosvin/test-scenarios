@@ -40,6 +40,13 @@ def test_scenario_fixture_creation(
         )
 
 
+def test_collections_empty_before_test(db: Database):
+    """Test that the collections are empty before each test function."""
+    for collection_name in db.list_collection_names():
+        count = db[collection_name].count_documents({})
+        assert count == 0, f"Collection {collection_name} is not empty before test"
+
+
 def test_create_raises_on_partial_insert(db, scenario_builder, monkeypatch):
     """If insert_many does not return all inserted ids, raise ValueError."""
 

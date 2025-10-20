@@ -13,6 +13,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "poethepoet>=0.37.0",
     "pymongo>=4.15.3",
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
@@ -26,7 +27,7 @@ test_scenarios = "test_scenarios.pytest_fixtures"
 [tool.poe.tasks]
 test = "uv run pytest tests"
 test-update = "uv run pytest tests --snapshot-update"
-coverage = "uv run pytest --cov-report html --cov=src/test_scenarios --cov-report=term-missing tests"
+coverage = "uv run pytest --cov-report html --cov-report xml --cov=src/test_scenarios --cov-report=term-missing tests"
 lint = "uv run ruff check"
 format = "uv run ruff check --fix"
 
