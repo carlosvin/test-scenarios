@@ -22,7 +22,9 @@ def templates_path(request: pytest.FixtureRequest):
 
 @pytest.fixture(scope="session")
 def mongo_client(request: pytest.FixtureRequest):
-    db_url = _get_option(request, "db-url", default="mongodb://localhost:27017")
+    db_url = _get_option(
+        request, "db-url", default="mongodb://127.0.0.1:27017/?directConnection=true"
+    )
     with MongoClient(db_url) as client:
         yield client
 
