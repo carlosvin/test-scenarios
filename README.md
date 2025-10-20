@@ -23,7 +23,7 @@ pip install -r requirements-dev.txt
 If published to PyPI, you can install the package:
 
 ```bash
-pip install test-scenarios
+pip install pytest-scenarios
 ```
 
 ## Configuration
@@ -43,7 +43,7 @@ Example pytest configuration using the library and pymongo:
 import os
 import pytest
 from pymongo import MongoClient
-from test_scenarios import TestScenario
+from pytest_scenarios import TestScenario
 
 user_scenario = TestScenario(
     collection="users",

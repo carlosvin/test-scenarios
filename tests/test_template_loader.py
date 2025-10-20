@@ -4,7 +4,7 @@ Tests for the template_loader utility.
 
 import importlib
 from types import SimpleNamespace
-from test_scenarios.template_loader import load_templates_from_path
+from pytest_scenarios.template_loader import load_templates_from_path
 from tests.templates import customers, products, orders
 
 

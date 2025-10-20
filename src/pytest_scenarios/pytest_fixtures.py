@@ -3,8 +3,8 @@ from pymongo.database import Database
 import pytest
 import os
 
-from test_scenarios.scenario import ScenarioBuilder
-from test_scenarios.template_loader import load_templates_from_path
+from pytest_scenarios.scenario import ScenarioBuilder
+from pytest_scenarios.template_loader import load_templates_from_path
 
 
 def _get_option(request: pytest.FixtureRequest, name: str, default=None):

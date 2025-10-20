@@ -3,7 +3,7 @@
 from types import SimpleNamespace
 
 import pytest
-from test_scenarios.scenario import ScenarioBuilder
+from pytest_scenarios.scenario import ScenarioBuilder
 from pymongo.database import Database
 from syrupy.filters import props
 
