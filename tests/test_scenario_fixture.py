@@ -14,10 +14,12 @@ def test_scenario_fixture_creation(
     """Test that scenario_fixture allows scenario creation"""
     inserted_ids_by_collection = scenario_builder.create(
         {
+            # this overrides the values declared in test/templates/customers.py
             "customers": [
-                {"name": "Alice", "status": "inactive"},
-                {"name": "Louis", "age": 25},
+                {"name": "Alice", "status": "inactive", "email": "alice@test.com"},
+                {"name": "Louis", "age": 25, "email": "louis@test.com"},
             ],
+            # this overrides the values declared in test/templates/orders.py
             "orders": [
                 {
                     "id": "order_001",
