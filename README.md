@@ -11,17 +11,6 @@ Test Scenarios is a small Python library that simplifies writing integration tes
 
 ## Installation
 
-For development:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
-pip install -r requirements-dev.txt
-```
-
-If published to PyPI, you can install the package:
-
 ```bash
 pip install pytest-scenarios
 ```
@@ -38,12 +27,77 @@ Or with Poetry:
 poetry add pytest-scenarios --group dev
 ```
 
+## Templates
+
+The templates are documents with predefined values that will be used to create scenarios.
+
+A template corresponds with a MongoDB collection.
+
+Check the example at [tests/templates](./tests/templates) where we have `customers`, `orders` and `products`.
+
+Every template should module consists of a dictionary assigned to a constant named `TEMPLATE`.
+
+```python
+# tests/templates/orders.py
+
+TEMPLATE = {
+    "id": "123456789abcdef01234567",
+    "customer_id": "customer_001",
+    "items": [
+        {"product_id": "product_001", "quantity": 2, "price": 19.99},
+        {"product_id": "product_002", "quantity": 1, "price": 9.99},
+    ],
+    "tax": 0.15,
+}
+```
+
 ## Configuration
 
-Set the MongoDB connection URI via environment variable:
+The configuration can be set via environment variables or via pytest init options.
+
+### DB Connection
+
+Set the MongoDB connection URI via environment variable.
 
 ```bash
-export MONGODB_URI="mongodb://localhost:27017"
+# environment var
+DB_URL=mongodb://localhost:27017
+DB_NAME=test_db
+```
+
+```toml
+# pyproject.toml
+[tool.pytest.ini_options]
+db-url="mongodb://localhost:27017"
+db-name="test_db"
+```
+
+```ini
+# pytest.ini
+[pytest]
+db-url=mongodb://localhost:27017
+db-name=test_db
+```
+
+### Templates path
+
+The location of the templates used to generate the database documents.
+
+```bash
+# environment var
+TEMPLATES_PATH=tests/templates
+```
+
+```toml
+# pyproject.toml
+[tool.pytest.ini_options]
+templates-path="tests/templates"
+```
+
+```ini
+# pytest.ini
+[pytest]
+templates-path=tests/templates
 ```
 
 ## Getting started (pytest)
@@ -54,13 +108,15 @@ A simple test:
 def test_example(
     scenario_builder: ScenarioBuilder, db: Database
 ):
-    """Test that scenario_fixture allows scenario creation"""
+    """Test that the scenario is created correctly, in this case it creates 2 customers and 2 orders"""
     inserted_ids_by_collection = scenario_builder.create(
         {
+            # this overrides the values declared in test/templates/customers.py
             "customers": [
-                {"name": "Alice", "status": "inactive"},
-                {"name": "Louis", "age": 25},
+                {"name": "Alice", "status": "inactive", "email": "alice@test.com"},
+                {"name": "Louis", "age": 25, "email": "louis@test.com"},
             ],
+            # this overrides the values declared in test/templates/orders.py
             "orders": [
                 {
                     "id": "order_001",
@@ -77,14 +133,14 @@ def test_example(
         }
     )
     for collection_name, inserted_ids in inserted_ids_by_collection:
-        assert len(inserted_ids) == 2
+        # in the scenario above we are inserting 2 documents by collection
+        assert len(inserted_ids) == 2, collection_name
 ```
 
-Run tests:
+You can check some examples of of the generated documents here:
 
-```bash
-pytest -q
-```
+- [customers](./tests/__snapshots__/test_scenario_fixture/test_scenario_fixture_creation[customers].json)
+- [orders](./tests/__snapshots__/test_scenario_fixture/test_scenario_fixture_creation[orders].json)
 
 ## Contributing
 

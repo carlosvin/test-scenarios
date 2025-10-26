@@ -1,13 +1,13 @@
 [
   {
     "age": 30,
-    "email": "john.doe@mdb.test",
+    "email": "alice@test.com",
     "name": "Alice",
     "status": "inactive"
   },
   {
     "age": 25,
-    "email": "john.doe@mdb.test",
+    "email": "louis@test.com",
     "name": "Louis",
     "status": "active"
   }
