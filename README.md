@@ -2,6 +2,8 @@
 
 **Test Scenarios** is a Python library designed to make integration testing with MongoDB effortless and maintainable. It enables you to define reusable data templates and quickly build test scenarios, so you can focus on writing meaningful tests instead of boilerplate setup code.
 
+[![codecov](https://codecov.io/gh/carlosvin/pytest-scenarios/graph/badge.svg?token=6B9XMTWBH2)](https://codecov.io/gh/carlosvin/pytest-scenarios) [![PyPI version](https://badge.fury.io/py/pytest-scenarios.svg)](https://badge.fury.io/py/pytest-scenarios)
+
 ## Why use Test Scenarios?
 
 - **Rapid scenario creation:** Define templates once, reuse them across tests, and override only what you need.
