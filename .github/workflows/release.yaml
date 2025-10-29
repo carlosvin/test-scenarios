@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Gen version number
         id: gen-version
-        uses: K-Phoen/semver-release-action@master
+        uses: K-Phoen/semver-release-action@v1.3.2
         with:
           release_branch: main
           release_strategy: none
@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/checkout@v5
       - name: Install UV
-        uses: astral-sh/setup-uv@v7.1.1
+        uses: astral-sh/setup-uv@v7.1.2
       - name: Set up Python
         run: uv python install
       - run: git config user.name "${{ github.actor }}"
