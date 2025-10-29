@@ -1,27 +1,27 @@
 name: Publish Pip Package
 
 on:
-    release:
-        types: [published]
+  release:
+    types: [published]
 
 jobs:
-    pip-publish:
-        name: Publish the package to pip
-        runs-on: ubuntu-latest
-        environment:
-            name: pypi
-            url: https://pypi.org/p/pytest-scenarios
-        permissions:
-            id-token: write
-        steps:
-            - uses: actions/checkout@v5
-            - name: Install UV
-              uses: astral-sh/setup-uv@v7.1.1
-            - name: Set up Python
-              run: uv python install
-            - name: Install the project
-              run: uv sync --locked --all-extras --dev
-            - name: Build package distributions
-              run: uv build
-            - name: Publish package distributions to PyPI
-              uses: pypa/gh-action-pypi-publish@v1.13.0
+  pip-publish:
+    name: Publish the package to pip
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pytest-scenarios
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7.1.2
+      - name: Set up Python
+        run: uv python install
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+      - name: Build package distributions
+        run: uv build
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.13.0

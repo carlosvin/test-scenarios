@@ -1,0 +1,39 @@
+name: CI checks
+
+on: [push]
+jobs:
+  ci-checks:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        mongodb-version: ["5.0.9"]
+
+    steps:
+      - name: Start MongoDB
+        uses: MongoCamp/mongodb-github-action@1.2.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
+      - run: curl http://localhost:27017
+
+      - uses: actions/checkout@v5
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7.1.2
+      - name: Set up Python
+        run: uv python install
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+      - name: Test
+        run: uv run poe coverage
+      - name: Lint
+        run: uv run poe lint
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v5.5.1
+        with:
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
