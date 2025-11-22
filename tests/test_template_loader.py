@@ -3,7 +3,10 @@ Tests for the template_loader utility.
 """
 
 import importlib
+import os
 from types import SimpleNamespace
+
+import pytest
 
 from pytest_scenarios.template_loader import load_templates_from_path
 from tests.templates import customers, orders, products
@@ -85,3 +88,52 @@ def test_missing_template_skipped(tmp_path):
     templates = load_templates_from_path(str(tmp_path))
 
     assert "no_template" not in templates
+
+
+class TestTemplateLoaderEdgeCases:
+    """Additional tests for template_loader edge cases."""
+
+    def test_load_templates_with_relative_path(self):
+        """Test loading templates with a relative path."""
+        # This should work with the tests/templates directory
+        templates = load_templates_from_path("tests/templates")
+        assert len(templates) > 0
+        assert all(isinstance(v, dict) for v in templates.values())
+
+    def test_load_templates_with_absolute_path(self):
+        """Test loading templates with an absolute path."""
+        abs_path = os.path.abspath("tests/templates")
+        templates = load_templates_from_path(abs_path)
+        assert len(templates) > 0
+
+    def test_load_templates_missing_directory(self):
+        """Test loading templates from a non-existent directory raises error."""
+        with pytest.raises(FileNotFoundError):
+            load_templates_from_path("nonexistent/path")
+
+    def test_load_templates_empty_directory(self, tmp_path):
+        """Test loading templates from an empty directory."""
+        templates = load_templates_from_path(str(tmp_path))
+        assert templates == {}
+
+    def test_load_templates_skips_init_py(self, tmp_path):
+        """Test that __init__.py files are skipped."""
+        init_file = tmp_path / "__init__.py"
+        init_file.write_text("TEMPLATE = {'should_be_skipped': True}\n")
+
+        templates = load_templates_from_path(str(tmp_path))
+
+        assert "__init__" not in templates
+
+    def test_load_templates_with_valid_and_invalid_files(self, tmp_path):
+        """Test loading templates with mixed valid and invalid modules."""
+        # Create files with different scenarios
+        (tmp_path / "valid.py").write_text("TEMPLATE = {'valid': True}\n")
+        (tmp_path / "no_template.py").write_text("VAR = 123\n")
+
+        templates = load_templates_from_path(str(tmp_path))
+
+        # Only valid should be loaded
+        assert "valid" in templates
+        assert "no_template" not in templates
+        assert templates["valid"] == {"valid": True}
