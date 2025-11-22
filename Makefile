@@ -1,4 +1,9 @@
-.PHONY: test test-update coverage lint format upgrade
+.PHONY: install test test-update coverage lint format upgrade
+
+# Install Python and project dependencies
+install:
+	uv python install
+	uv sync --locked --all-extras --dev
 
 # Run tests
 test:
