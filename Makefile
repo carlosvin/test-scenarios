@@ -1,4 +1,4 @@
-.PHONY: install test test-update coverage lint format upgrade
+.PHONY: install test test-update coverage lint format upgrade build
 
 # Install Python and project dependencies
 install:
