@@ -13,7 +13,6 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "poethepoet>=0.37.0",
     "pymongo>=4.15.3",
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
@@ -23,13 +22,6 @@ dev = [
 
 [project.entry-points.pytest11]
 pytest_scenarios = "pytest_scenarios.pytest_fixtures"
-
-[tool.poe.tasks]
-test = "uv run pytest tests"
-test-update = "uv run pytest tests --snapshot-update"
-coverage = "uv run pytest --cov-report html --cov-report xml --cov=src/pytest_scenarios --cov-report=term-missing tests"
-lint = "uv run ruff check"
-format = "uv run ruff check --fix"
 
 [tool.coverage.run]
 source = ["src/pytest_scenarios"]
@@ -50,3 +42,21 @@ exclude_lines = [
     "^from .* import ",
 ]
 show_missing = true
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # Pyflakes
+    "I",  # isort
+    "N",  # pep8-naming
+    "UP", # pyupgrade
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pytest_scenarios"]

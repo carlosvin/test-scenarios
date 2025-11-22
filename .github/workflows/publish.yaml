@@ -16,12 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install UV
-        uses: astral-sh/setup-uv@v7.1.2
+        uses: astral-sh/setup-uv@v7.1.4
       - name: Set up Python
-        run: uv python install
-      - name: Install the project
-        run: uv sync --locked --all-extras --dev
+        run: make install
       - name: Build package distributions
-        run: uv build
+        run: make build
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@v1.13.0
