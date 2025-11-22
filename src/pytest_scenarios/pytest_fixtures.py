@@ -1,7 +1,8 @@
+import os
+
+import pytest
 from pymongo import MongoClient
 from pymongo.database import Database
-import pytest
-import os
 
 from pytest_scenarios.scenario import ScenarioBuilder
 from pytest_scenarios.template_loader import load_templates_from_path

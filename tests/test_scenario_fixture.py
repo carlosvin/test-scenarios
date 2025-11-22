@@ -3,9 +3,10 @@
 from types import SimpleNamespace
 
 import pytest
-from pytest_scenarios.scenario import ScenarioBuilder
 from pymongo.database import Database
 from syrupy.filters import props
+
+from pytest_scenarios.scenario import ScenarioBuilder
 
 
 def test_scenario_fixture_creation(

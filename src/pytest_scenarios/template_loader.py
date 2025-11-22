@@ -4,10 +4,10 @@ A utility to dynamically load template dictionaries from modules in a given pack
 
 import importlib
 import os
-from typing import Any, Dict
+from typing import Any
 
 
-def load_templates_from_path(path: str) -> Dict[str, Any]:
+def load_templates_from_path(path: str) -> dict[str, Any]:
     """
     Loads all TEMPLATE dictionaries from Python files in the given directory.
 
@@ -29,5 +29,5 @@ def load_templates_from_path(path: str) -> Dict[str, Any]:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             if hasattr(module, "TEMPLATE"):
-                templates[module_name] = getattr(module, "TEMPLATE")
+                templates[module_name] = module.TEMPLATE
     return templates

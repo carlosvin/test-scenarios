@@ -1,4 +1,5 @@
-from typing import Iterable
+from collections.abc import Iterable
+
 from bson import ObjectId
 from pymongo.database import Database
 
