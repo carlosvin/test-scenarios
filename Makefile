@@ -28,3 +28,6 @@ format:
 # Upgrade all dependencies
 upgrade:
 	uv sync --upgrade
+
+build:
+	uv build

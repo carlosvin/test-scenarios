@@ -29,9 +29,9 @@ jobs:
 
       - uses: actions/checkout@v5
       - name: Install UV
-        uses: astral-sh/setup-uv@v7.1.2
+        uses: astral-sh/setup-uv@v7.1.4
       - name: Set up Python
-        run: uv python install
+        run: make install
       - run: git config user.name "${{ github.actor }}"
       - run: git config user.email "${{ github.actor }}@users.noreply.github.com"
 
@@ -40,7 +40,7 @@ jobs:
         run: |
           VERSION=$(echo "${{ steps.gen-version.outputs.tag }}" | sed 's/^v//')
           uv version "$VERSION"
-          uv sync --locked --all-extras --dev
+          make install
           git commit pyproject.toml -m "Bump to version $VERSION"
           git push
           COMMIT=$(git rev-parse --short HEAD)
@@ -59,7 +59,6 @@ jobs:
 
       - name: Build pip
         run: |
-          uv sync --locked --all-extras --dev
-          uv build
+          make install build
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
