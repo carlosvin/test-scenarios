@@ -1,6 +1,6 @@
 [project]
 name = "pytest-scenarios"
-version = "0.0.11"
+version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "Carlos Martin Sanchez", email = "carlosvin@gmail.com" }]
