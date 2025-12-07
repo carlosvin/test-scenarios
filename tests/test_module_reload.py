@@ -32,7 +32,7 @@ def test_reload_scenario_module():
 
 
 def test_reload_template_loader_module():
-    """Reload template_loader so load_templates_from_path definition executes under coverage."""
+    """Reload template_loader so the load_templates_from_path definition executes under coverage."""
     module = importlib.import_module("pytest_scenarios.template_loader")
     reloaded = importlib.reload(module)
     assert hasattr(reloaded, "load_templates_from_path")
