@@ -106,6 +106,18 @@ templates-path="tests/templates"
 templates-path=tests/templates
 ```
 
+### Pytest Command-Line Options
+
+All options can also be provided directly on the `pytest` command line:
+
+```bash
+pytest --templates-path=tests/templates \
+    --db-url=mongodb://localhost:27017 \
+    --db-name=test_db
+```
+
+These flags mirror the environment and config settings shown above, making it easy to override values per run.
+
 ## Quickstart
 
 Get started in three steps:
