@@ -1,100 +1,47 @@
-"""Tests to improve code coverage for option resolution and registration."""
+"""Tests for option resolution helpers and registration."""
 
 import os
+from typing import Optional
 from unittest.mock import ANY, MagicMock, patch
 
 from pytest_scenarios.pytest_fixtures import _get_option, pytest_addoption
 
 
-def test_get_option_from_config():
-    """Test getting option from pytest config."""
+def test_get_option_returns_cli_value() -> None:
+    """CLI arguments should take priority over any other source."""
+
     request = MagicMock()
-    request.config.getoption.return_value = "config_value"
-    request.config.getini.return_value = None
+    request.config.getoption.return_value = "cli_value"
+    request.config.getini.return_value = "ini_value"
 
     result = _get_option(request, "test-option", default="default_value")
 
-    assert result == "config_value"
+    assert result == "cli_value"
+    request.config.getoption.assert_called_once_with("--test-option", default="ini_value")
 
 
-def test_get_option_from_environment():
-    """Test getting option from environment variable."""
+def test_get_option_falls_back_to_ini() -> None:
+    """When CLI is unset, fall back to pytest.ini configuration."""
+
     request = MagicMock()
-
-    def mock_getoption(opt, default=None):
-        return default
-
-    request.config.getoption = mock_getoption
-    request.config.getini.return_value = None
-
-    with patch.dict(os.environ, {"TEST_OPTION": "env_value"}):
-        result = _get_option(request, "test-option", default="default_value")
-
-    assert result == "env_value"
-
-
-def test_get_option_default():
-    """Test getting option default when not in config or environment."""
-    request = MagicMock()
-
-    def mock_getoption(opt, default=None):
-        return default
-
-    request.config.getoption = mock_getoption
-    request.config.getini.return_value = None
-
-    with patch.dict(os.environ, {}, clear=False):
-        result = _get_option(request, "test-option", default="default_value")
-
-    assert result == "default_value"
-
-
-def test_get_option_name_with_hyphens_converts_to_underscores():
-    """Test that option names with hyphens are converted to underscores for env vars."""
-    request = MagicMock()
-
-    def mock_getoption(opt, default=None):
-        return default
-
-    request.config.getoption = mock_getoption
-    request.config.getini.return_value = None
-
-    with patch.dict(os.environ, {"DB_URL": "mongodb://localhost"}):
-        result = _get_option(request, "db-url", default="default")
-
-    assert result == "mongodb://localhost"
-
-
-def test_get_option_from_ini():
-    """Test that pytest.ini values are used when CLI and env are unset."""
-    request = MagicMock()
-    request.config.getoption.return_value = None
     request.config.getini.return_value = "ini_value"
 
-    with patch.dict(os.environ, {}, clear=False):
-        result = _get_option(request, "test-option", default="default_value")
+    def mock_getoption(option: str, default: Optional[str] = None) -> Optional[str]:
+        return default
+
+    request.config.getoption.side_effect = mock_getoption
+
+    result = _get_option(request, "test-option", default="default_value")
 
     assert result == "ini_value"
 
 
-def test_get_option_handles_missing_ini():
-    """Fallback to default when config.getini raises a ValueError."""
-
-    request = MagicMock()
-    request.config.getoption.return_value = None
-    request.config.getini.side_effect = ValueError
-
-    with patch.dict(os.environ, {}, clear=False):
-        result = _get_option(request, "test-option", default="default_value")
-
-    assert result == "default_value"
-
-
-def test_pytest_addoption_registers_custom_options():
-    """Ensure pytest_addoption registers CLI and ini options without errors."""
+def test_pytest_addoption_registers_defaults() -> None:
+    """pytest_addoption wires CLI and ini registrations with expected defaults."""
 
     parser = MagicMock()
     group = parser.getgroup.return_value
+    ini_parser = group.parser
 
     pytest_addoption(parser)
 
@@ -102,35 +49,63 @@ def test_pytest_addoption_registers_custom_options():
         "--templates-path",
         action="store",
         dest="templates_path",
-        default=None,
-        help=ANY,
-    )
-    group.addoption.assert_any_call(
-        "--db-url",
-        action="store",
-        dest="db_url",
-        default=None,
+        default="tests/templates",
         help=ANY,
     )
     group.addoption.assert_any_call(
         "--db-name",
         action="store",
         dest="db_name",
-        default=None,
+        default="test_db",
         help=ANY,
     )
-    parser.addini.assert_any_call(
-        "templates-path",
-        ANY,
-        default="tests/templates",
-    )
-    parser.addini.assert_any_call(
-        "db-url",
-        ANY,
+    group.addoption.assert_any_call(
+        "--db-url",
+        action="store",
+        dest="db_url",
         default="mongodb://127.0.0.1:27017/?directConnection=true",
+        help=ANY,
     )
-    parser.addini.assert_any_call(
-        "db-name",
-        ANY,
+    ini_parser.addini.assert_any_call(
+        name="templates-path",
+        help=ANY,
+        default="tests/templates",
+        type="string",
+    )
+    ini_parser.addini.assert_any_call(
+        name="db-name",
+        help=ANY,
         default="test_db",
+        type="string",
+    )
+    ini_parser.addini.assert_any_call(
+        name="db-url",
+        help=ANY,
+        default="mongodb://127.0.0.1:27017/?directConnection=true",
+        type="string",
+    )
+
+
+def test_pytest_addoption_honors_environment_defaults() -> None:
+    """Environment variables should override hard-coded defaults during registration."""
+
+    parser = MagicMock()
+    group = parser.getgroup.return_value
+    ini_parser = group.parser
+
+    with patch.dict(os.environ, {"TEMPLATES_PATH": "env/templates"}):
+        pytest_addoption(parser)
+
+    group.addoption.assert_any_call(
+        "--templates-path",
+        action="store",
+        dest="templates_path",
+        default="env/templates",
+        help=ANY,
+    )
+    ini_parser.addini.assert_any_call(
+        name="templates-path",
+        help=ANY,
+        default="env/templates",
+        type="string",
     )

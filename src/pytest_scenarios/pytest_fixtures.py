@@ -8,74 +8,62 @@ from pytest_scenarios.scenario import ScenarioBuilder
 from pytest_scenarios.template_loader import load_templates_from_path
 
 
+def _option_to_env_var_name(name: str) -> str:
+    return name.upper().replace("-", "_")
+
+
 def _get_option(
     request: pytest.FixtureRequest, name: str, default: str | None = None
 ) -> str | None:
     """Resolve configuration value from CLI, environment, pytest.ini, or default."""
+    value = request.config.getoption(
+        f"--{name}",
+        default=request.config.getini(name),
+    )
 
-    config = request.config
-    cli_value = config.getoption(f"--{name}", default=None)
-    if cli_value is not None:
-        value: str | None = cli_value
-    else:
-        env_key = name.upper().replace("-", "_")
-        env_value = os.environ.get(env_key)
-        if env_value is not None:
-            value = env_value
-        else:
-            try:
-                ini_value = config.getini(name)
-            except (TypeError, ValueError):
-                ini_value = None
-            if isinstance(ini_value, str) and ini_value:
-                value = ini_value
-            else:
-                value = default
-
-    print(f"Using option {name}={value}")
+    print(f"Using {name}={value}")
     return value
+
+
+def _register_options(group: pytest.OptionGroup, name: str, default: str, help: str) -> None:
+    env_var_name = _option_to_env_var_name(name)
+    default = os.getenv(env_var_name, default=default)
+    group.addoption(
+        f"--{name}",
+        action="store",
+        dest=env_var_name.lower(),
+        default=default,
+        help=help,
+    )
+    group.parser.addini(
+        name=name,
+        help=help,
+        default=default,
+        type="string",
+    )
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     """Register pytest-scenarios custom command line and ini options."""
 
     group = parser.getgroup("pytest-scenarios")
-    group.addoption(
-        "--templates-path",
-        action="store",
-        dest="templates_path",
-        default=None,
-        help="Directory containing template modules for pytest-scenarios.",
-    )
-    group.addoption(
-        "--db-url",
-        action="store",
-        dest="db_url",
-        default=None,
-        help="MongoDB connection string used by pytest-scenarios fixtures.",
-    )
-    group.addoption(
-        "--db-name",
-        action="store",
-        dest="db_name",
-        default=None,
-        help="Database name used by pytest-scenarios fixtures.",
-    )
-
-    parser.addini(
-        "templates-path",
-        "Default directory containing template modules for pytest-scenarios.",
+    _register_options(
+        group,
+        name="templates-path",
         default="tests/templates",
+        help="Directory containing template modules for pytest-scenarios",
     )
-    parser.addini(
-        "db-url",
-        "MongoDB connection string used by pytest-scenarios fixtures.",
-        default="mongodb://127.0.0.1:27017/?directConnection=true",
-    )
-    parser.addini(
-        "db-name",
-        "Database name used by pytest-scenarios fixtures.",
+    _register_options(
+        group,
+        name="db-name",
         default="test_db",
+        help="Database name used by pytest-scenarios fixtures",
+    )
+    _register_options(
+        group,
+        name="db-url",
+        default="mongodb://127.0.0.1:27017/?directConnection=true",
+        help="MongoDB connection string used by pytest-scenarios fixtures",
     )
 
 
