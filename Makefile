@@ -15,7 +15,7 @@ test-update:
 
 # Generate coverage report
 coverage:
-	uv run pytest --cov-report html --cov-report xml --cov=src/pytest_scenarios --cov-report=term-missing tests
+	uv run pytest --cov-report html --junitxml=junit.xml -o junit_family=legacy --cov=src/pytest_scenarios --cov-report=term-missing tests
 
 # Lint code
 lint:
