@@ -27,18 +27,18 @@ def _get_option(
 
 def _register_options(group: pytest.OptionGroup, name: str, default: str, help: str) -> None:
     env_var_name = _option_to_env_var_name(name)
-    default = os.getenv(env_var_name, default=default)
+    default_from_env = os.getenv(env_var_name, default=default)
     group.addoption(
         f"--{name}",
         action="store",
         dest=env_var_name.lower(),
-        default=default,
+        default=default_from_env,
         help=help,
     )
     group.parser.addini(
         name=name,
         help=help,
-        default=default,
+        default=default_from_env,
         type="string",
     )
 
