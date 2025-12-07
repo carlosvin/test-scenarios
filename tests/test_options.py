@@ -63,7 +63,7 @@ def test_pytest_addoption_registers_defaults() -> None:
         "--db-url",
         action="store",
         dest="db_url",
-        default="mongodb://127.0.0.1:27017/?directConnection=true",
+        default="mongodb://127.0.0.1:27017",
         help=ANY,
     )
     ini_parser.addini.assert_any_call(
@@ -81,7 +81,7 @@ def test_pytest_addoption_registers_defaults() -> None:
     ini_parser.addini.assert_any_call(
         name="db-url",
         help=ANY,
-        default="mongodb://127.0.0.1:27017/?directConnection=true",
+        default="mongodb://127.0.0.1:27017",
         type="string",
     )
 

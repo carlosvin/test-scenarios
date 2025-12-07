@@ -62,7 +62,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     _register_options(
         group,
         name="db-url",
-        default="mongodb://127.0.0.1:27017/?directConnection=true",
+        default="mongodb://127.0.0.1:27017",
         help="MongoDB connection string used by pytest-scenarios fixtures",
     )
 
@@ -74,9 +74,7 @@ def templates_path(request: pytest.FixtureRequest):
 
 @pytest.fixture(scope="session")
 def mongo_client(request: pytest.FixtureRequest):
-    db_url = _get_option(
-        request, "db-url", default="mongodb://127.0.0.1:27017/?directConnection=true"
-    )
+    db_url = _get_option(request, "db-url", default="mongodb://127.0.0.1:27017")
     with MongoClient(db_url) as client:
         yield client
 
