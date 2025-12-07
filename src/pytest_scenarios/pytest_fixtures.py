@@ -8,12 +8,63 @@ from pytest_scenarios.scenario import ScenarioBuilder
 from pytest_scenarios.template_loader import load_templates_from_path
 
 
-def _get_option(request: pytest.FixtureRequest, name: str, default=None):
+def _option_to_env_var_name(name: str) -> str:
+    return name.upper().replace("-", "_")
+
+
+def _get_option(
+    request: pytest.FixtureRequest, name: str, default: str | None = None
+) -> str | None:
+    """Resolve configuration value from CLI, environment, pytest.ini, or default."""
     value = request.config.getoption(
-        f"--{name}", default=os.environ.get(name.upper().replace("-", "_"), default)
+        f"--{name}",
+        default=request.config.getini(name),
     )
-    print(f"Using option {name}={value}")
+
+    print(f"Using {name}={value}")
     return value
+
+
+def _register_options(group: pytest.OptionGroup, name: str, default: str, help: str) -> None:
+    env_var_name = _option_to_env_var_name(name)
+    default_from_env = os.getenv(env_var_name, default=default)
+    group.addoption(
+        f"--{name}",
+        action="store",
+        dest=env_var_name.lower(),
+        default=default_from_env,
+        help=help,
+    )
+    group.parser.addini(
+        name=name,
+        help=help,
+        default=default_from_env,
+        type="string",
+    )
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Register pytest-scenarios custom command line and ini options."""
+
+    group = parser.getgroup("pytest-scenarios")
+    _register_options(
+        group,
+        name="templates-path",
+        default="tests/templates",
+        help="Directory containing template modules for pytest-scenarios",
+    )
+    _register_options(
+        group,
+        name="db-name",
+        default="test_db",
+        help="Database name used by pytest-scenarios fixtures",
+    )
+    _register_options(
+        group,
+        name="db-url",
+        default="mongodb://127.0.0.1:27017",
+        help="MongoDB connection string used by pytest-scenarios fixtures",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -23,9 +74,7 @@ def templates_path(request: pytest.FixtureRequest):
 
 @pytest.fixture(scope="session")
 def mongo_client(request: pytest.FixtureRequest):
-    db_url = _get_option(
-        request, "db-url", default="mongodb://127.0.0.1:27017/?directConnection=true"
-    )
+    db_url = _get_option(request, "db-url", default="mongodb://127.0.0.1:27017")
     with MongoClient(db_url) as client:
         yield client
 
