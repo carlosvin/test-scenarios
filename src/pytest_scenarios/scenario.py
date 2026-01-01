@@ -46,14 +46,66 @@ class ScenarioBuilder:
     def create(
         self, scenario: dict[str, Iterable[dict]], add_scenario_id=False
     ) -> dict[str, list[ObjectId]]:
-        """Create a scenario and return a dictionary of collection names to inserted document IDs.
-        The scenario is a dictionary where keys are collection names
-        and values are iterables of documents to insert into those collections.
+        """Create a test scenario by inserting documents into MongoDB collections.
+
+        A scenario definition specifies document data that **overrides** template defaults.
+        Each document in the scenario is merged with its collection's template using the
+        pattern: template | scenario_document. This means:
+        - Fields specified in the scenario **override** template values
+        - Fields **not specified** in the scenario use template defaults
+        - Fields only in the template are automatically included
+
         Args:
-            scenario: The scenario definition.
-            add_scenario_id: Whether to add a scenario_id field to each document.
+            scenario: Dictionary mapping collection names to lists of document overrides.
+                Keys must correspond to existing template files (e.g., "customers"
+                requires a customers.py template). Values are lists of partial documents
+                that override specific template fields.
+
+                Merge behavior:
+                    final_document = TEMPLATE | scenario_document
+
+                Example with template {"status": "active", "age": 18}:
+                    {
+                        "customers": [
+                            # Overrides age, keeps status="active"
+                            {"name": "Alice", "age": 25},
+                            # Keeps both status="active" and age=18
+                            {"name": "Bob"}
+                        ],
+                        "orders": [
+                            # Merged with orders template
+                            {"customer_id": "alice_123", "total": 99.99}
+                        ]
+                    }
+
+            add_scenario_id: If True, adds a unique "scenario_id" ObjectId field to all
+                inserted documents across all collections. Useful for tracking which
+                documents belong to the same test scenario or for cleanup purposes.
+                The scenario_id is added after template-scenario merging, so it won't
+                be overridden by either.
+
         Returns:
-            A dictionary where keys are collection names and values are lists of inserted document IDs.
+            Dictionary mapping collection names to lists of inserted ObjectIds.
+            For example: {"customers": [ObjectId(...), ObjectId(...)], "orders": [ObjectId(...)]}
+            Empty document lists return empty ObjectId lists.
+
+        Raises:
+            ValueError: If the number of inserted documents doesn't match the number requested.
+                This indicates a database error during insertion.
+
+        Example:
+            >>> # Template: {"status": "active", "balance": 0.0}
+            >>> result = scenario_builder.create({
+            ...     "customers": [
+            ...         # Gets status="active", balance=0.0 from template
+            ...         {"name": "Alice"},
+            ...         # Gets status="active", overrides balance
+            ...         {"name": "Bob", "balance": 100}
+            ...     ]
+            ... })
+            >>> assert len(result["customers"]) == 2
+            >>> # Alice has {name: "Alice", status: "active", balance: 0.0}
+            >>> # Bob has {name: "Bob", status: "active", balance: 100}
         """
         inserted_ids_by_collection = {}
         for collection_name, inserted_ids in self._create(

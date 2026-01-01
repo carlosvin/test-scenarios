@@ -55,6 +55,101 @@ TEMPLATE = {
 }
 ```
 
+## What is a scenario definition?
+
+A **scenario definition** is a dictionary that describes the test data you want to create across multiple MongoDB collections. It maps collection names to lists of document specifications that **override** values from their corresponding templates.
+
+### Relationship with Templates
+
+**Templates provide defaults, scenario definitions override them.**
+
+When you create a scenario:
+
+1. The library starts with the template for each collection
+2. It merges your scenario definition on top of the template
+3. Values you specify in the scenario **override** template values
+4. Values **not specified** in the scenario use the template defaults
+
+This merge operation follows Python's dictionary merge: `template | scenario_definition`
+
+### Structure
+
+```python
+scenario = {
+    "collection_name": [        # Must match a template filename
+        {"field": "value"},      # Override specific fields
+        {"field": "value"},      # Each dict becomes one document
+    ],
+    "another_collection": [
+        {"field": "value"},
+    ],
+}
+```
+
+### How it works
+
+1. **Keys** are collection names that must match your template filenames (e.g., `customers.py` → `"customers"`)
+2. **Values** are lists of partial document specifications
+3. Each document specification **overrides** the corresponding template fields
+4. **Unspecified fields** automatically use values from the template
+
+### Example
+
+Given this template with default values:
+
+```python
+# tests/templates/customers.py
+TEMPLATE = {
+    "status": "active",           # Default: active
+    "email": "default@example.com", # Default email
+    "age": 18,                     # Default age
+}
+```
+
+This scenario definition overrides specific fields:
+
+```python
+scenario = {
+    "customers": [
+        # Alice: override email, keep status="active" and age=18 from template
+        {"name": "Alice", "email": "alice@test.com"},
+        
+        # Bob: override age, keep status="active" and email="default@example.com" from template
+        {"name": "Bob", "age": 30},
+    ]
+}
+```
+
+Produces these final documents in MongoDB:
+
+```python
+[
+    # Alice gets: her name + overridden email + defaults from template
+    {
+        "name": "Alice",
+        "email": "alice@test.com",    # ✓ Overridden
+        "status": "active",            # ✓ From template
+        "age": 18                      # ✓ From template
+    },
+    
+    # Bob gets: his name + overridden age + defaults from template
+    {
+        "name": "Bob",
+        "age": 30,                      # ✓ Overridden
+        "status": "active",            # ✓ From template
+        "email": "default@example.com" # ✓ From template
+    },
+]
+```
+
+### Benefits
+
+- **Less boilerplate**: Only specify what's unique to your test
+- **Consistent defaults**: Template values ensure data integrity across tests
+- **Flexible overrides**: Change any field without repeating unchanged values
+- **Multi-collection support**: Set up complex relationships in one call
+- **Clean tests**: Focus on test logic, not data setup
+
 ## Configuration
 
 Configure the library using environment variables or pytest config files.
