@@ -11,25 +11,23 @@ def test_checkout_happy_path(scenario_builder: ScenarioBuilder, db: Database):
         Given an active customer and a product in stock
         Then the order is created with status 'pending' and correct total amount.
     """
-    list(
-        scenario_builder.create(
-            {
-                "customers": [
-                    {"customer_id": "customer_123", "status": "active"},
-                ],
-                "products": [
-                    {"product_id": "sku-001", "price": 25.50},
-                ],
-                "orders": [
-                    {
-                        "id": "checkout_order",
-                        "customer_id": "customer_123",
-                        "items": [{"product_id": "sku-001", "quantity": 1}],
-                        "total": 25.50,
-                    }
-                ],
-            }
-        )
+    scenario_builder.create(
+        {
+            "customers": [
+                {"customer_id": "customer_123", "status": "active"},
+            ],
+            "products": [
+                {"product_id": "sku-001", "price": 25.50},
+            ],
+            "orders": [
+                {
+                    "id": "checkout_order",
+                    "customer_id": "customer_123",
+                    "items": [{"product_id": "sku-001", "quantity": 1}],
+                    "total": 25.50,
+                }
+            ],
+        }
     )
 
     # Verify that the scenario has been set up correctly
@@ -50,7 +48,7 @@ def test_checkout_rejects_out_of_stock_item(scenario_builder: ScenarioBuilder, d
     # Verify that the previous scenario data has been cleaned up
     assert db["orders"].count_documents({}) == 0
 
-    docs_iterable = scenario_builder.create(
+    docs_by_collection = scenario_builder.create(
         {
             "products": [
                 {"product_id": "sku-003", "in_stock": False},
@@ -63,7 +61,7 @@ def test_checkout_rejects_out_of_stock_item(scenario_builder: ScenarioBuilder, d
             ],
         }
     )
-    assert len(list(docs_iterable)) == 2
+    assert len(docs_by_collection) == 2
 
     # Verify that the scenario has been set up correctly in the database
     product = db["products"].find_one({"product_id": "sku-003"})

@@ -7,6 +7,9 @@ dependencies = ["pymongo"]
 [tool.uv]
 dev-dependencies = ["pytest", "pytest-scenarios"]
 
+[tool.uv.sources]
+pytest-scenarios = { workspace = true }
+
 [tool.pytest.ini_options]
 addopts = "-q"
 db-url = "mongodb://127.0.0.1:27017/?directConnection=true"

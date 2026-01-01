@@ -17,7 +17,7 @@ class ScenarioBuilder:
         self._templates = templates
         self._init_collections()
 
-    def create(
+    def _create(
         self, scenario: dict[str, Iterable[dict]], add_scenario_id=False
     ) -> Iterable[tuple[str, list[ObjectId]]]:
         """Create a scenario with the given steps.
@@ -31,6 +31,10 @@ class ScenarioBuilder:
             collection = self._db[collection_name]
             template = self._templates.get(collection_name, {})
             docs_to_insert = [template | doc | scenario_doc for doc in docs]
+            if not docs_to_insert:
+                yield collection_name, []
+                continue
+
             result = collection.insert_many(
                 docs_to_insert, comment=f"ScenarioBuilder {scenario_id}"
             )
@@ -38,6 +42,25 @@ class ScenarioBuilder:
                 raise ValueError("Failed to insert all documents")
 
             yield collection_name, result.inserted_ids
+
+    def create(
+        self, scenario: dict[str, Iterable[dict]], add_scenario_id=False
+    ) -> dict[str, list[ObjectId]]:
+        """Create a scenario and return a dictionary of collection names to inserted document IDs.
+        The scenario is a dictionary where keys are collection names
+        and values are iterables of documents to insert into those collections.
+        Args:
+            scenario: The scenario definition.
+            add_scenario_id: Whether to add a scenario_id field to each document.
+        Returns:
+            A dictionary where keys are collection names and values are lists of inserted document IDs.
+        """
+        inserted_ids_by_collection = {}
+        for collection_name, inserted_ids in self._create(
+            scenario, add_scenario_id=add_scenario_id
+        ):
+            inserted_ids_by_collection[collection_name] = inserted_ids
+        return inserted_ids_by_collection
 
     def _init_collections(self) -> Iterable[dict]:
         """Register templates in the database.

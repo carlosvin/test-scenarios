@@ -6,6 +6,12 @@ resolution-markers = [
     "python_full_version < '3.10'",
 ]
 
+[manifest]
+members = [
+    "pytest-scenarios",
+    "pytest-scenarios-demo",
+]
+
 [[package]]
 name = "colorama"
 version = "0.4.6"
@@ -446,7 +452,7 @@ wheels = [
 
 [[package]]
 name = "pytest-scenarios"
-version = "0.2.0"
+version = "0.2.1"
 source = { editable = "." }
 
 [package.dev-dependencies]
@@ -467,6 +473,29 @@ dev = [
     { name = "pytest-cov", specifier = ">=4.1,<7.0" },
     { name = "ruff", specifier = ">=0.14.8" },
     { name = "syrupy", specifier = ">=4.6,<5.0" },
+]
+
+[[package]]
+name = "pytest-scenarios-demo"
+version = "0.1.0"
+source = { virtual = "examples" }
+dependencies = [
+    { name = "pymongo" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-scenarios" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pymongo" }]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-scenarios", editable = "." },
 ]
 
 [[package]]

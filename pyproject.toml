@@ -7,6 +7,9 @@ authors = [{ name = "Carlos Martin Sanchez", email = "carlosvin@gmail.com" }]
 requires-python = ">=3.9"
 dependencies = []
 
+[tool.uv.workspace]
+members = ["examples"]
+
 [build-system]
 requires = ["uv_build>=0.9.3,<0.10.0"]
 build-backend = "uv_build"
