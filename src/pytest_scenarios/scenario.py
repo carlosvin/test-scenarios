@@ -24,7 +24,7 @@ class ScenarioBuilder:
         The scenario is a dictionary where keys are collection names
         and values are iterables of documents to insert into those collections.
         This method yields tuples of collection name and list of inserted document IDs.
-        The are only created when iterating over the returned iterable."""
+        They are only created when iterating over the returned iterable."""
         scenario_id = ObjectId()
         scenario_doc = {"scenario_id": scenario_id} if add_scenario_id else {}
         for collection_name, docs in scenario.items():
