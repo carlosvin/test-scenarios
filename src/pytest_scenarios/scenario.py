@@ -19,6 +19,16 @@ class ScenarioBuilder:
 
     def create(
         self, scenario: dict[str, Iterable[dict]], add_scenario_id=False
+    ) -> dict[str, list[ObjectId]]:
+        """Create a scenario with the given steps.
+        The scenario is a dictionary where keys are collection names
+        and values are iterables of documents to insert into those collections.
+        This method returns a dictionary of collection names and list of inserted document IDs.
+        """
+        return dict(self._create(scenario, add_scenario_id))
+
+    def _create(
+        self, scenario: dict[str, Iterable[dict]], add_scenario_id=False
     ) -> Iterable[tuple[str, list[ObjectId]]]:
         """Create a scenario with the given steps.
         The scenario is a dictionary where keys are collection names

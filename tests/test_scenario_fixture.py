@@ -32,7 +32,7 @@ def test_scenario_fixture_creation(scenario_builder: ScenarioBuilder, db: Databa
             ],
         }
     )
-    for collection_name, inserted_ids in inserted_ids_by_collection:
+    for collection_name, inserted_ids in inserted_ids_by_collection.items():
         assert len(inserted_ids) == 2
         assert db[collection_name].find({}).to_list() == snapshot_json(
             name=collection_name, exclude=props("_id")
@@ -63,7 +63,7 @@ def test_create_raises_on_partial_insert(db, scenario_builder, monkeypatch):
     scenario = {"customers": [{"name": "a"}, {"name": "b"}]}
 
     with pytest.raises(ValueError):
-        list(scenario_builder.create(scenario))
+        scenario_builder.create(scenario)
 
 
 def test_scenario_builder_direct_instantiation(scenario_builder):
@@ -76,9 +76,9 @@ def test_scenario_builder_direct_instantiation(scenario_builder):
 
 def test_scenario_builder_create_method_directly(scenario_builder):
     """Call create method directly to ensure it executes."""
-    results = list(scenario_builder.create({"customers": [{"name": "test"}]}))
+    results = scenario_builder.create({"customers": [{"name": "test"}]})
     assert len(results) == 1
-    assert results[0][0] == "customers"
+    assert "customers" in results
 
 
 def test_scenario_builder_init_collections_via_fixture(scenario_builder):
@@ -98,7 +98,7 @@ def test_scenario_builder_collections_property_via_fixture(scenario_builder):
 def test_scenario_builder_cleanup_via_fixture(scenario_builder):
     """Test cleanup_collections method."""
     # Insert data
-    list(scenario_builder.create({"customers": [{"data": "test"}]}))
+    scenario_builder.create({"customers": [{"data": "test"}]})
     assert scenario_builder._db["customers"].count_documents({}) > 0
 
     # Cleanup
@@ -111,13 +111,13 @@ class TestScenarioBuilderEdgeCases:
 
     def test_scenario_builder_with_empty_scenario(self, scenario_builder):
         """Test creating an empty scenario (no collections)."""
-        result = list(scenario_builder.create({}))
-        assert result == []
+        result = scenario_builder.create({})
+        assert result == {}
 
     def test_scenario_builder_cleanup_collections(self, scenario_builder):
         """Test cleanup_collections method removes all data."""
         # Insert some data
-        list(scenario_builder.create({"customers": [{"name": "test"}]}))
+        scenario_builder.create({"customers": [{"name": "test"}]})
         # Verify data exists
         assert scenario_builder._db["customers"].count_documents({}) > 0
         # Cleanup
@@ -134,12 +134,12 @@ class TestScenarioBuilderEdgeCases:
 
     def test_scenario_builder_with_scenario_id(self, scenario_builder):
         """Test create with add_scenario_id=True."""
-        result = list(
-            scenario_builder.create({"customers": [{"name": "test"}]}, add_scenario_id=True)
+        result = scenario_builder.create(
+            {"customers": [{"name": "test"}]}, add_scenario_id=True
         )
         assert len(result) == 1
-        collection_name, inserted_ids = result[0]
-        assert collection_name == "customers"
+        assert "customers" in result
+        inserted_ids = result["customers"]
         # Verify the document has scenario_id
         doc = scenario_builder._db["customers"].find_one({"_id": inserted_ids[0]})
         assert "scenario_id" in doc
@@ -147,7 +147,7 @@ class TestScenarioBuilderEdgeCases:
     def test_scenario_builder_merges_template_and_doc(self, scenario_builder):
         """Test that template fields are merged with provided document fields."""
         # customers template has status="active" by default
-        list(scenario_builder.create({"customers": [{"name": "item1", "status": "inactive"}]}))
+        scenario_builder.create({"customers": [{"name": "item1", "status": "inactive"}]})
         doc = scenario_builder._db["customers"].find_one({})
         # Template value should be overridden
         assert doc["status"] == "inactive"
