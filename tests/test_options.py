@@ -1,7 +1,6 @@
 """Tests for option resolution helpers and registration."""
 
 import os
-from typing import Optional
 from unittest.mock import ANY, MagicMock, patch
 
 from pytest_scenarios.pytest_fixtures import _get_option, pytest_addoption
@@ -26,7 +25,7 @@ def test_get_option_falls_back_to_ini() -> None:
     request = MagicMock()
     request.config.getini.return_value = "ini_value"
 
-    def mock_getoption(option: str, default: Optional[str] = None) -> Optional[str]:
+    def mock_getoption(option: str, default: str | None = None) -> str | None:
         return default
 
     request.config.getoption.side_effect = mock_getoption
